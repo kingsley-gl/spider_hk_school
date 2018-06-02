@@ -20,16 +20,16 @@ pat = re.compile(r'^/')
 for link in soup:
     if not re.match(pat, link['href']):
         print(link['href'], link.text)
-        links = requests.get('https://www.schooland.hk/kg/'+link['href'])
+        links = requests.get('https://www.schooland.hk/ss/'+link['href'])
         a = BeautifulSoup(links.text)
         tbs = a.find_all(class_='school-table')
         for tb in tbs:
             for lk in tb.find_all('a'):
                 print(lk['href'], lk.text)
-                schl_detl = requests.get('https://www.schooland.hk/kg/' + lk['href'])
+                schl_detl = requests.get('https://www.schooland.hk/ss/' + lk['href'])
                 schl_detl_soup = BeautifulSoup(schl_detl.text)
                 contact = schl_detl_soup.find(class_='contact')
-                # print(contact.text)
+                school_nm = contact.h4.getText('|').split('|')
                 t = contact.find_all('p')[0].text.split('\n')
                 text = []
                 for te in t:
@@ -49,6 +49,9 @@ for link in soup:
                 sir = {sir[0]: e, r: sir[2]}
                 # print(sir.split('|'))
                 c.update(sir)
+                c.update({'學校(中文)': school_nm[0]})
+                c.update({'學校(英文)': school_nm[1]})
+                c.update({'地區': link.text})
                 print(c)
                 break
             break
@@ -91,6 +94,7 @@ class crawl_school(object):
         msg = contact.find_all('p')[0].text.split('\n')
         text = []
         c = {}
+        school_nm = contact.h4.getText('|').split('|')
         for te in msg:
             text.extend(te.split('\xa0'))
         for t in text:
@@ -100,14 +104,15 @@ class crawl_school(object):
             if a == '':
                 continue
             c.update({a.split('：')[0]: a.split('： ')[1]})
-
-        sir = contact.find_all('p')[1].text
         sir = contact.find_all('p')[1].getText(' ')
         sir = sir.split('：')
         e = sir[1].split(' ')[0]
         r = ''.join(sir[1].split(' ')[1:])
         sir = {sir[0]: e, r: sir[2]}
         c.update(sir)
+        c.update({'學校(中文)': school_nm[0]})
+        c.update({'學校(英文)': school_nm[1]})
+        c.update({'地區': area_name})
         return c
 
 
