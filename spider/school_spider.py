@@ -28,8 +28,28 @@ for link in soup:
                 print(lk['href'], lk.text)
                 schl_detl = requests.get('https://www.schooland.hk/kg/' + lk['href'])
                 schl_detl_soup = BeautifulSoup(schl_detl.text)
-                contact = schl_detl_soup.find_all(class_='contact')
-                print(contact)
+                contact = schl_detl_soup.find(class_='contact')
+                # print(contact.text)
+                t = contact.find_all('p')[0].text.split('\n')
+                text = []
+                for te in t:
+                    text.extend(te.split('\xa0'))
+                c = {}
+                for t in text:
+                    if '' in t:
+                        text.remove(t)
+                    a = t.replace('\r', '')
+                    if a == '':
+                        continue
+                    c.update({a.split('：')[0]: a.split('：')[1]})
+                sir = contact.find_all('p')[1].getText(' ')
+                sir = sir.split('：')
+                e = sir[1].split(' ')[0]
+                r = ''.join(sir[1].split(' ')[1:])
+                sir = {sir[0]: e, r: sir[2]}
+                # print(sir.split('|'))
+                c.update(sir)
+                print(c)
                 break
             break
         break
@@ -67,7 +87,30 @@ class crawl_school(object):
     def crawl_school_contract(self, area_name, school_link, level):
         schl_detl = requests.get(''.join([level, school_link]))
         schl_detl_soup = BeautifulSoup(schl_detl.text)
-        contact = schl_detl_soup.find_all(class_='contact')
+        contact = schl_detl_soup.find(class_='contact')
+        msg = contact.find_all('p')[0].text.split('\n')
+        text = []
+        c = {}
+        for te in msg:
+            text.extend(te.split('\xa0'))
+        for t in text:
+            if '' in t:
+                text.remove(t)
+            a = t.replace('\r', '')
+            if a == '':
+                continue
+            c.update({a.split('：')[0]: a.split('： ')[1]})
+
+        sir = contact.find_all('p')[1].text
+        sir = contact.find_all('p')[1].getText(' ')
+        sir = sir.split('：')
+        e = sir[1].split(' ')[0]
+        r = ''.join(sir[1].split(' ')[1:])
+        sir = {sir[0]: e, r: sir[2]}
+        c.update(sir)
+        return c
+
+
 
 
 
